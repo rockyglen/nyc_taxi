@@ -1,0 +1,9 @@
+matplotlib
+notebook
+pandas
+pyarrow
+requests
+seaborn
+lightgbm
+plotly
+xgboost
