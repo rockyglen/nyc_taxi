@@ -7,16 +7,15 @@ import calendar
 
 # Add the parent directory to the Python path
 from datetime import datetime, timedelta
-
-from pathlib import Path  # Add this import if not already present
-
-from src.config import RAW_DATA_DIR
+from pathlib import Path
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
-
+import pytz
 import requests
-from typing import List, Optional, Tuple, Union
+
+from src.config import RAW_DATA_DIR
 
 
 def fetch_raw_trip_data(year: int, month: int) -> Path:
