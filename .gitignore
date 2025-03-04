@@ -180,3 +180,5 @@ pyrightconfig.json
 .env
 data/*
 models/*
+
+taxi_venv/*
