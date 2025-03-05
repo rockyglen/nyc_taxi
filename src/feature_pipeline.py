@@ -2,6 +2,7 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta, timezone
+import pytz
 
 import hopsworks
 import pandas as pd
@@ -20,9 +21,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# Step 1: Get the current date and time (timezone-aware)
-current_date = pd.to_datetime(datetime.now(timezone.utc)).ceil("h")
-logger.info(f"Current date and time (UTC): {current_date}")
+# Step 1: Get the current date and time in EST (timezone-aware)
+est = pytz.timezone('US/Eastern')  # Define the EST timezone
+current_date = pd.to_datetime(datetime.now(est)).ceil("h")
+logger.info(f"Current date and time (EST): {current_date}")
 
 # Step 2: Define the data fetching range
 fetch_data_to = current_date
