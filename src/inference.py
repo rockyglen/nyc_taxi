@@ -6,7 +6,7 @@ import pandas as pd
 from hsfs.feature_store import FeatureStore
 
 import src.config 
-from data_utils import transform_ts_data_info_features
+from src.data_utils import transform_ts_data_info_features
 
 
 def get_hopsworks_project() -> hopsworks.project.Project:
