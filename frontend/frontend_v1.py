@@ -2,7 +2,7 @@ import os
 import sys
 
 sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "..")))
-
+print(sys.path)
 import zipfile
 from datetime import datetime
 from pathlib import Path
@@ -17,14 +17,14 @@ import requests
 import streamlit as st
 from streamlit_folium import st_folium
 
-from config import DATA_DIR
-from inference import (
+from src.config import DATA_DIR
+from src.inference import (
     get_model_predictions,
     load_batch_of_features_from_store,
     load_metrics_from_registry,
     load_model_from_registry,
 )
-from plot_utils import plot_aggregated_time_series
+from src.plot_utils import plot_aggregated_time_series
 
 # Initialize session state for the map
 if "map_created" not in st.session_state:
