@@ -7,7 +7,7 @@ import pytz
 import hopsworks
 import pandas as pd
 
-import config as config
+import config
 from data_utils import fetch_batch_raw_data, transform_raw_data_into_ts_data
 
 # Configure logging
