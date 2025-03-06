@@ -50,11 +50,11 @@ def load_batch_of_features_from_store(
         end_time=(fetch_data_to + timedelta(days=1)),
     )
     ts_data = ts_data[ts_data.pickup_hour.between(fetch_data_from, fetch_data_to)]
-
+    fft_features = compute_fft_features(ts_data, feature_col="rides", n_fft=10)
     # Sort data by location and time
     ts_data.sort_values(by=["pickup_location_id", "pickup_hour"], inplace=True)
 
-    fft_features = compute_fft_features(ts_data, feature_col="rides", n_fft=10)
+    
 
     features = transform_ts_data_info_features(
         ts_data, window_size=24 * 28, step_size=23
