@@ -50,7 +50,7 @@ def load_batch_of_features_from_store(
         end_time=(fetch_data_to + timedelta(days=1)),
     )
     ts_data = ts_data[ts_data.pickup_hour.between(fetch_data_from, fetch_data_to)]
-    fft_features = compute_fft_features(ts_data, feature_col="rides", n_fft=10)
+    
     # Sort data by location and time
     ts_data.sort_values(by=["pickup_location_id", "pickup_hour"], inplace=True)
 
@@ -60,7 +60,7 @@ def load_batch_of_features_from_store(
         ts_data, window_size=24 * 28, step_size=23
     )
 
-    features = features.merge(fft_features, on="pickup_location_id", how="left")
+    
 
     return features
 
@@ -79,7 +79,7 @@ def load_model_from_registry(version=None):
     model_registry = project.get_model_registry()
 
     models = model_registry.get_models(name=config.MODEL_NAME)
-    model = max(models, key=lambda model: model.version)
+    model = min(models, key=lambda model: model.version)
     model_dir = model.download()
     model = joblib.load(Path(model_dir) / "lgb_model.pkl")
 
