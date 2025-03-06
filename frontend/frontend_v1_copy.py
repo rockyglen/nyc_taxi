@@ -216,6 +216,18 @@ def load_shape_data_file(
         raise Exception(f"Failed to load shapefile {shapefile_path}: {e}")
 
 
+def load_zone_lookup(csv_file_path):
+    """
+    Loads the taxi zone lookup CSV and creates a mapping from Zone to Location_ID.
+    """
+    try:
+        zone_lookup_df = pd.read_csv(csv_file_path)
+        zone_lookup_df = zone_lookup_df[["Zone", "Location_ID"]]
+        return zone_lookup_df.set_index("Zone")
+    except Exception as e:
+        raise Exception(f"Failed to load taxi zone lookup CSV: {e}")
+
+
 # st.set_page_config(layout="wide")
 
 current_date = pd.Timestamp.now(tz='America/New_York')
@@ -225,6 +237,10 @@ st.header(f'{current_date.strftime("%Y-%m-%d %H:%M:%S")}')
 progress_bar = st.sidebar.header("Working Progress")
 progress_bar = st.sidebar.progress(0)
 N_STEPS = 5
+
+# Load taxi zone lookup CSV
+csv_file_path = os.path.join(os.path.dirname(__file__), "taxi_zone_lookup.csv")
+zone_lookup_df = load_zone_lookup(csv_file_path)
 
 with st.spinner(text="Download shape file for taxi zones"):
     geo_df = load_shape_data_file(DATA_DIR)
@@ -257,17 +273,20 @@ with st.spinner(text="Plot predicted rides demand"):
     if st.session_state.map_created:
         st_folium(st.session_state.map_obj, width=800, height=600, returned_objects=[])
 
-    # Create dropdown for selecting location_id
-    location_ids = predictions.index.tolist()  # Assuming the index holds the Location IDs
-    selected_location_id = st.selectbox(
-        "Select a Taxi Zone (Location ID)", location_ids, index=0
+    # Create dropdown for selecting zone names
+    zone_names = zone_lookup_df.index.tolist()  # List of zones from the 'Zone' column
+    selected_zone = st.selectbox(
+        "Select a Taxi Zone (Name)", zone_names, index=0
     )
+
+    # Get the corresponding Location_ID from the lookup table
+    selected_location_id = zone_lookup_df.loc[selected_zone, "Location_ID"]
 
     # Filter predictions for the selected location_id
     selected_predictions = predictions[predictions.index == selected_location_id]
 
     # Plot the aggregated time series for the selected location
-    st.subheader(f"Predicted Rides for Taxi Zone {selected_location_id}")
+    st.subheader(f"Predicted Rides for Taxi Zone {selected_zone} (Location ID: {selected_location_id})")
     fig = plot_aggregated_time_series(
         features=features,
         targets=predictions["predicted_demand"],

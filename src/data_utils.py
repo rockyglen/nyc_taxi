@@ -576,3 +576,31 @@ def transform_ts_data_info_features(
 
     # Return only the features DataFrame
     return final_df
+
+
+
+
+def compute_fft_features(df, feature_col="rides", n_fft=10):
+    """
+    Compute FFT-based features for each location ID.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing time series data.
+        feature_col (str): Column name containing the values to use for FFT.
+        n_fft (int): Number of FFT components to keep.
+
+    Returns:
+        pd.DataFrame: DataFrame with FFT features.
+    """
+    location_ids = df["pickup_location_id"].unique()
+    fft_features = []
+
+    for location_id in location_ids:
+        location_data = df[df["pickup_location_id"] == location_id][feature_col].values
+        fft_values = np.fft.fft(location_data)
+        fft_magnitude = np.abs(fft_values)[:n_fft]
+        fft_features.append([location_id] + list(fft_magnitude))
+
+    columns = ["pickup_location_id"] + [f"fft_{i}" for i in range(n_fft)]
+    fft_df = pd.DataFrame(fft_features, columns=columns)
+    return fft_df
