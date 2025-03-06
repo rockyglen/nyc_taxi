@@ -223,7 +223,7 @@ def load_zone_lookup(csv_file_path):
     """
     try:
         zone_lookup_df = pd.read_csv(csv_file_path)
-        zone_lookup_df = zone_lookup_df[["Zone", "Location_ID"]]
+        zone_lookup_df = zone_lookup_df[["Zone", "LocationID"]]
         return zone_lookup_df.set_index("Zone")
     except Exception as e:
         raise Exception(f"Failed to load taxi zone lookup CSV: {e}")
