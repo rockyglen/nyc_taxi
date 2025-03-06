@@ -15,6 +15,7 @@ import pydeck as pdk
 import requests
 import streamlit as st
 from streamlit_folium import st_folium
+from branca.colormap import LinearColormap
 
 from src.config import DATA_DIR
 from src.inference import (
@@ -73,18 +74,6 @@ def visualize_predicted_demand(shapefile_path, predicted_demand):
 
     # Show the plot
     st.pyplot(fig)
-
-
-import os
-import tempfile
-
-import folium
-import geopandas as gpd
-import numpy as np
-import pandas as pd
-import streamlit as st
-from branca.colormap import LinearColormap
-from streamlit_folium import st_folium
 
 
 def create_taxi_map(shapefile_path, prediction_data):
@@ -237,18 +226,15 @@ progress_bar = st.sidebar.header("Working Progress")
 progress_bar = st.sidebar.progress(0)
 N_STEPS = 5
 
-
 with st.spinner(text="Download shape file for taxi zones"):
     geo_df = load_shape_data_file(DATA_DIR)
     st.sidebar.write("Shape file was downloaded")
     progress_bar.progress(1 / N_STEPS)
 
-
 with st.spinner(text="Fetching batch of inference data"):
     features = load_batch_of_features_from_store(current_date)
     st.sidebar.write("Inference features fetched from the store")
     progress_bar.progress(2 / N_STEPS)
-
 
 with st.spinner(text="Load model from registry"):
     model = load_model_from_registry()
@@ -261,19 +247,34 @@ with st.spinner(text="Computing model predictions"):
     progress_bar.progress(4 / N_STEPS)
     print(predictions)
 
-
 shapefile_path = DATA_DIR / "taxi_zones" / "taxi_zones.shp"
 
 with st.spinner(text="Plot predicted rides demand"):
-    # predictions_df = visualize_predicted_demand(
-    #     shapefile_path, predictions["predicted_demand"]
-    # )
     st.subheader("Taxi Ride Predictions Map")
     map_obj = create_taxi_map(shapefile_path, predictions)
 
     # Display the map
     if st.session_state.map_created:
         st_folium(st.session_state.map_obj, width=800, height=600, returned_objects=[])
+
+    # Create dropdown for selecting location_id
+    location_ids = predictions.index.tolist()  # Assuming the index holds the Location IDs
+    selected_location_id = st.selectbox(
+        "Select a Taxi Zone (Location ID)", location_ids, index=0
+    )
+
+    # Filter predictions for the selected location_id
+    selected_predictions = predictions[predictions.index == selected_location_id]
+
+    # Plot the aggregated time series for the selected location
+    st.subheader(f"Predicted Rides for Taxi Zone {selected_location_id}")
+    fig = plot_aggregated_time_series(
+        features=features,
+        targets=predictions["predicted_demand"],
+        row_id=selected_location_id,
+        predictions=pd.Series(selected_predictions["predicted_demand"]),
+    )
+    st.plotly_chart(fig, theme="streamlit", use_container_width=True)
 
     # Display data statistics
     st.subheader("Prediction Statistics")
