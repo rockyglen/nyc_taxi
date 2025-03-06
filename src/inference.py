@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+import pytz
 
 import hopsworks
 import numpy as np
@@ -93,24 +94,29 @@ def load_metrics_from_registry(version=None):
 
 
 def fetch_next_hour_predictions():
-    # Get current UTC time and round up to next hour
-    now = datetime.now(timezone.utc)
+    # Define the EST timezone
+    est = pytz.timezone('US/Eastern')
+    
+    # Get current EST time and round up to next hour
+    now = datetime.now(est)
     next_hour = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
 
     fs = get_feature_store()
     fg = fs.get_feature_group(name=config.FEATURE_GROUP_MODEL_PREDICTION, version=1)
     df = fg.read()
+
     # Then filter for next hour in the DataFrame
     df = df[df["pickup_hour"] == next_hour]
 
-    print(f"Current UTC time: {now}")
+    print(f"Current EST time: {now}")
     print(f"Next hour: {next_hour}")
     print(f"Found {len(df)} records")
     return df
 
 
 def fetch_predictions(hours):
-    current_hour = (pd.Timestamp.now(tz="Etc/UTC") - timedelta(hours=hours)).floor("h")
+    # Get current EST time, adjusted by the specified number of hours, and floor it to the hour
+    current_hour = (pd.Timestamp.now(tz="US/Eastern") - timedelta(hours=hours)).floor("h")
 
     fs = get_feature_store()
     fg = fs.get_feature_group(name=config.FEATURE_GROUP_MODEL_PREDICTION, version=1)
@@ -133,7 +139,8 @@ def fetch_hourly_rides(hours):
 
 
 def fetch_days_data(days):
-    current_date = pd.to_datetime(datetime.now(timezone.utc))
+    est = pytz.timezone('US/Eastern')
+    current_date = pd.to_datetime(datetime.now(est))
     fetch_data_from = current_date - timedelta(days=(365 + days))
     fetch_data_to = current_date - timedelta(days=365)
     print(fetch_data_from, fetch_data_to)
@@ -141,7 +148,6 @@ def fetch_days_data(days):
     fg = fs.get_feature_group(name=config.FEATURE_GROUP_NAME, version=1)
 
     query = fg.select_all()
-    # query = query.filter((fg.pickup_hour >= fetch_data_from))
     df = query.read()
     cond = (df["pickup_hour"] >= fetch_data_from) & (df["pickup_hour"] <= fetch_data_to)
     return df[cond]
