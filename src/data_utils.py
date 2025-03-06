@@ -50,6 +50,8 @@ def filter_nyc_taxi_data(rides: pd.DataFrame, year: int, month: int) -> pd.DataF
         raise ValueError("Month must be between 1 and 12.")
     if not isinstance(year, int) or not isinstance(month, int):
         raise ValueError("Year and month must be integers.")
+    
+    
 
     # Calculate start and end dates for the specified month
     start_date = pd.Timestamp(year=year, month=month, day=1)

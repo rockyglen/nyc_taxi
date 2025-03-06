@@ -49,6 +49,37 @@ class TemporalFeatureEngineer(BaseEstimator, TransformerMixin):
 add_temporal_features = TemporalFeatureEngineer()
 
 
+# Custom transformer to add FFT features
+class FFTFeatureEngineer(BaseEstimator, TransformerMixin):
+    def __init__(self, time_series_col, new_feature_prefix, n_components=10):
+        self.time_series_col = time_series_col
+        self.new_feature_prefix = new_feature_prefix
+        self.n_components = n_components
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        X_ = X.copy()
+        # 1. Perform FFT
+        time_series = X_[self.time_series_col].values
+        fft_result = fft(time_series)
+        fft_magnitude = np.abs(fft_result)
+
+        # 2. Find the dominant frequencies (excluding the DC component)
+        indices = np.argsort(fft_magnitude)[::-1][1:]
+
+        # 3. Create new features based on the magnitudes of the dominant frequencies
+        for i, index in enumerate(indices[: self.n_components]):  # Top N frequencies
+            X_[f"{self.new_feature_prefix}_fft_magnitude_{i+1}"] = fft_magnitude[index]
+
+        return X_
+
+
+# Instantiate the FFT feature engineer
+add_fft_features = FFTFeatureEngineer(time_series_col="pickup_hour", new_feature_prefix="rides")
+
+
 # Function to return the pipeline
 def get_pipeline(**hyper_params):
     """
@@ -67,6 +98,7 @@ def get_pipeline(**hyper_params):
     pipeline = make_pipeline(
         add_feature_average_rides_last_4_weeks,
         add_temporal_features,
+        add_fft_features,  # Add FFT feature engineering to the pipeline
         lgb.LGBMRegressor(**hyper_params),  # Pass optional parameters here
     )
     return pipeline
