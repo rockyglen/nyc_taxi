@@ -281,7 +281,7 @@ with st.spinner(text="Plot predicted rides demand"):
     )
 
     # Get the corresponding Location_ID from the lookup table
-    selected_location_id = zone_lookup_df.loc[selected_zone, "Location_ID"]
+    selected_location_id = zone_lookup_df.loc[selected_zone, "LocationID"]
 
     # Filter predictions for the selected location_id
     selected_predictions = predictions[predictions.index == selected_location_id]
