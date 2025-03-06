@@ -18,6 +18,7 @@ from streamlit_folium import st_folium
 from branca.colormap import LinearColormap
 
 from src.config import DATA_DIR
+from src.config import PARENT_DIR
 from src.inference import (
     get_model_predictions,
     load_batch_of_features_from_store,
@@ -239,7 +240,7 @@ progress_bar = st.sidebar.progress(0)
 N_STEPS = 5
 
 # Load taxi zone lookup CSV
-csv_file_path = os.path.join(os.path.dirname(__file__), "taxi_zone_lookup.csv")
+csv_file_path = PARENT_DIR/"taxi_zone_lookup.csv"
 zone_lookup_df = load_zone_lookup(csv_file_path)
 
 with st.spinner(text="Download shape file for taxi zones"):
