@@ -7,7 +7,7 @@ import pandas as pd
 from hsfs.feature_store import FeatureStore
 
 import src.config as config
-from src.data_utils import transform_ts_data_info_features
+from src.data_utils import transform_ts_data_info_features,compute_fft_features
 
 
 def get_hopsworks_project() -> hopsworks.project.Project:
@@ -54,9 +54,13 @@ def load_batch_of_features_from_store(
     # Sort data by location and time
     ts_data.sort_values(by=["pickup_location_id", "pickup_hour"], inplace=True)
 
+    fft_features = compute_fft_features(ts_data, feature_col="rides", n_fft=10)
+
     features = transform_ts_data_info_features(
         ts_data, window_size=24 * 28, step_size=23
     )
+
+    features = features.merge(fft_features, on="pickup_location_id", how="left")
 
     return features
 
